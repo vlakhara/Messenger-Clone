@@ -1,16 +1,26 @@
 "use client";
 
-import { useState } from "react";
-import { VARIANT } from "../types/auth-page-types";
-import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
-import Input from "@/app/components/inputs/Input";
 import Button from "@/app/components/Button";
+import Input from "@/app/components/inputs/Input";
+import axios from "axios";
+import { signIn, useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import { BsGithub, BsGoogle } from "react-icons/bs";
+import { VARIANT } from "../types/auth-page-types";
 import AuthSocialButton from "./AuthSocialButton";
-import { BsFacebook, BsGithub, BsGoogle } from "react-icons/bs";
 
 const AuthForm = () => {
+  const session = useSession();
   const [variant, setVariant] = useState<VARIANT>("REGISTER");
   const [isLoading, setIsLoading] = useState<boolean>();
+
+  useEffect(() => {
+    if (session?.status === "authenticated") {
+      console.log("Authenticated");
+    }
+  }, [session?.status]);
 
   const {
     register,
@@ -28,14 +38,46 @@ const AuthForm = () => {
     setIsLoading(true);
 
     if (variant === "LOGIN") {
+      signIn("credentials", { ...data, redirect: false })
+        .then((callback) => {
+          if (callback?.error) {
+            toast.error("Invalid credentials");
+          }
+          if (callback?.ok && !callback?.error) {
+            toast.success("You are logged in");
+          }
+        })
+        .catch(() => toast.error("Something went wrong"))
+        .finally(() => {
+          setIsLoading(false);
+        });
     } else {
+      axios
+        .post("/api/register", data)
+        .catch(() => toast.error("Something went wrong"))
+        .finally(() => {
+          setIsLoading(false);
+        });
     }
-
-    // setIsLoading(false);
   };
 
   const socialAction = (action: string) => {
     setIsLoading(true);
+
+    signIn(action, { redirect: false })
+      .then((callback) => {
+        if (callback?.error) {
+          toast.error("Invalid credentials");
+        }
+        console.log({ callback });
+        if (callback?.ok && !callback?.error) {
+          toast.success("You are logged in");
+        }
+      })
+      .catch(() => toast.error("Something went wrong"))
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   const toggleVariant = () => {
