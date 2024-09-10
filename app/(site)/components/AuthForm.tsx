@@ -8,9 +8,9 @@ import { useEffect, useState } from "react";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { BsGithub, BsGoogle } from "react-icons/bs";
-import { VARIANT } from "../types/auth-page-types";
 import AuthSocialButton from "./AuthSocialButton";
 import { useRouter } from "next/navigation";
+import { VARIANT } from "@/app/types";
 
 const AuthForm = () => {
   const session = useSession();
